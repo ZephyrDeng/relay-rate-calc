@@ -329,6 +329,89 @@ input[type="number"]::-webkit-inner-spin-button {
   color: var(--text-muted);
 }
 
+.cost-header {
+  margin-bottom: 14px;
+}
+
+.cost-header h2 {
+  margin-bottom: 6px;
+}
+
+.cost-list {
+  display: grid;
+  gap: 12px;
+}
+
+.cost-item {
+  padding: 14px;
+  border-radius: 14px;
+  border: 1px solid var(--surface-border);
+  background: color-mix(in srgb, var(--surface) 88%, var(--accent-soft));
+}
+
+.cost-item-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.cost-provider {
+  margin: 0;
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.cost-title {
+  margin: 4px 0 0;
+  font-weight: 600;
+}
+
+.cost-desc {
+  margin: 6px 0 0;
+  color: var(--text-muted);
+  font-size: 0.86rem;
+  line-height: 1.45;
+}
+
+.cost-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.cost-metric {
+  padding: 10px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--surface) 72%, white 28%);
+}
+
+@media (prefers-color-scheme: dark) {
+  .cost-metric {
+    background: rgba(255, 255, 255, 0.04);
+  }
+}
+
+.cost-metric-label {
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.cost-metric-value {
+  margin: 4px 0 0;
+  font-family: var(--font-mono);
+  font-size: 0.98rem;
+  font-weight: 700;
+}
+
+.cost-metric-value.relay {
+  color: var(--accent);
+}
+
 .footer {
   margin-top: 18px;
 }
@@ -354,5 +437,9 @@ input[type="number"]::-webkit-inner-spin-button {
   .preset-btn {
     width: 100%;
     text-align: left;
+  }
+
+  .cost-metrics {
+    grid-template-columns: 1fr;
   }
 }

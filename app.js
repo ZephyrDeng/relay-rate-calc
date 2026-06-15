@@ -64,6 +64,8 @@ const elements = {
   marketCompare: document.getElementById("market-compare"),
   marketAdvantage: document.getElementById("market-advantage"),
   marketCompareDesc: document.getElementById("market-compare-desc"),
+  pricingMeta: document.getElementById("pricing-meta"),
+  costScenarios: document.getElementById("cost-scenarios"),
 };
 
 let currentMode = "zhe";
@@ -90,6 +92,18 @@ function formatNumber(value, maxDecimals = 4) {
   if (!Number.isFinite(value)) return "—";
   const fixed = value.toFixed(maxDecimals);
   return fixed.replace(/\.?0+$/, "");
+}
+
+function formatUsd(value) {
+  if (!Number.isFinite(value)) return "—";
+  if (value >= 0.01) return `$${formatNumber(value, 4)}`;
+  return `$${formatNumber(value, 6)}`;
+}
+
+function formatCny(value) {
+  if (!Number.isFinite(value)) return "—";
+  if (value >= 0.01) return `¥${formatNumber(value, 4)}`;
+  return `¥${formatNumber(value, 6)}`;
 }
 
 function multiplierToZhe(multiplier) {
@@ -188,6 +202,50 @@ function hideMarketComparison() {
   elements.marketCompare.classList.add("hidden");
 }
 
+function renderCostScenarios({ normalizedMultiplier, hasValidRate }) {
+  if (!hasValidRate) {
+    elements.costScenarios.innerHTML =
+      '<p class="hint">请先输入有效的基准汇率与折扣。</p>';
+    return;
+  }
+
+  elements.costScenarios.innerHTML = REFERENCE_SCENARIOS.map((scenario) => {
+    const usdCost = calcScenarioUsdCost(scenario);
+    const relayCny = calcRelayCnyCost({ usdCost, normalizedMultiplier });
+    const marketCny = marketRate
+      ? calcMarketCnyCost({ usdCost, marketCnyPerUsd: marketRate.cnyPerUsd })
+      : null;
+
+    return `
+      <article class="cost-item">
+        <div class="cost-item-top">
+          <div>
+            <p class="cost-provider">${scenario.provider}</p>
+            <p class="cost-title">${scenario.label}</p>
+            <p class="cost-desc">${scenario.description}</p>
+          </div>
+        </div>
+        <div class="cost-metrics">
+          <div class="cost-metric">
+            <p class="cost-metric-label">官方成本</p>
+            <p class="cost-metric-value">${formatUsd(usdCost)}</p>
+          </div>
+          <div class="cost-metric">
+            <p class="cost-metric-label">中转实付</p>
+            <p class="cost-metric-value relay">${formatCny(relayCny)}</p>
+          </div>
+          <div class="cost-metric">
+            <p class="cost-metric-label">市场直付</p>
+            <p class="cost-metric-value">${
+              marketCny === null ? "—" : formatCny(marketCny)
+            }</p>
+          </div>
+        </div>
+      </article>
+    `;
+  }).join("");
+}
+
 function updateMarketComparison(relayUsdPerCny) {
   if (!marketRate) {
     hideMarketComparison();
@@ -238,6 +296,7 @@ function recalculate() {
   if (baseCnyPerUsd === null) {
     showError("请输入大于 0 的基准汇率。");
     hideMarketComparison();
+    renderCostScenarios({ normalizedMultiplier: null, hasValidRate: false });
     return;
   }
 
@@ -248,6 +307,7 @@ function recalculate() {
         : "请输入大于 0 的支付倍率。"
     );
     hideMarketComparison();
+    renderCostScenarios({ normalizedMultiplier: null, hasValidRate: false });
     return;
   }
 
@@ -265,6 +325,10 @@ function recalculate() {
   elements.cnyPerUsd.textContent = formatNumber(result.cnyPerUsd);
   elements.usdPerCny.textContent = formatNumber(result.usdPerCny);
   updateMarketComparison(result.usdPerCny);
+  renderCostScenarios({
+    normalizedMultiplier: result.normalizedMultiplier,
+    hasValidRate: true,
+  });
 }
 
 function applyPreset(presetKey) {
@@ -302,6 +366,8 @@ elements.presetButtons.forEach((button) => {
 
 elements.refreshMarketRate.addEventListener("click", fetchMarketRate);
 elements.applyMarketRate.addEventListener("click", applyMarketRateToBase);
+
+elements.pricingMeta.textContent = `${PRICING_META.note} 更新：${PRICING_META.updatedAt}`;
 
 setMode("zhe");
 fetchMarketRate();

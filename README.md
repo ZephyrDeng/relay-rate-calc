@@ -6,6 +6,8 @@
 
 支持自动获取 **USD/CNY 市场汇率**（Frankfurter / open.er-api.com），可一键填入基准汇率，并显示相对市场的划算倍数。
 
+内置 **OpenAI / Claude 官方 API 参考成本**（对话一轮、GPT Image 2 生图等），按当前中转倍率换算成人民币实付。
+
 ## 公式
 
 ```text
@@ -52,6 +54,7 @@ relay-rate-calc/
 ├── index.html                      # 页面
 ├── styles.css                      # 样式
 ├── app.js                          # 计算逻辑
+├── pricing.js                      # 官方定价与参考场景
 ├── .github/workflows/deploy-pages.yml
 ├── README.md
 ├── LICENSE
