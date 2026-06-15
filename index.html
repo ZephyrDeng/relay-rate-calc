@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="中转站倍率计算器：将任意基准汇率与折扣归一化为 ¥1:$1 下的实际支付倍率"
+    />
+    <title>中转站倍率计算器</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="page">
+      <header class="hero">
+        <p class="eyebrow">Relay Rate Calculator</p>
+        <h1>中转站倍率计算器</h1>
+        <p class="subtitle">
+          统一按 <strong>¥1 : $1</strong> 基准，计算实际支付倍率与 1 元人民币可兑换美元数。
+        </p>
+      </header>
+
+      <section class="card input-card" aria-labelledby="input-heading">
+        <h2 id="input-heading">输入参数</h2>
+
+        <div class="field">
+          <label for="base-rate">基准汇率</label>
+          <div class="rate-input">
+            <span class="prefix">¥</span>
+            <input
+              id="base-rate"
+              type="number"
+              inputmode="decimal"
+              min="0"
+              step="any"
+              value="1"
+              aria-describedby="base-rate-hint"
+            />
+            <span class="suffix">: $1</span>
+          </div>
+          <p id="base-rate-hint" class="hint">买 1 美元在折扣前的标价（人民币）</p>
+        </div>
+
+        <div class="field">
+          <span class="label">折扣输入方式</span>
+          <div class="mode-switch" role="tablist" aria-label="折扣输入方式">
+            <button
+              type="button"
+              class="mode-btn active"
+              data-mode="zhe"
+              role="tab"
+              aria-selected="true"
+              aria-controls="discount-panel"
+            >
+              折
+            </button>
+            <button
+              type="button"
+              class="mode-btn"
+              data-mode="multiplier"
+              role="tab"
+              aria-selected="false"
+              aria-controls="discount-panel"
+            >
+              倍率
+            </button>
+          </div>
+        </div>
+
+        <div id="discount-panel" class="field" role="tabpanel">
+          <label for="discount-value" id="discount-label">折扣（折）</label>
+          <div class="discount-input">
+            <input
+              id="discount-value"
+              type="number"
+              inputmode="decimal"
+              min="0"
+              step="any"
+              value="5"
+              aria-describedby="discount-hint"
+            />
+            <span id="discount-suffix" class="suffix">折</span>
+          </div>
+          <p id="discount-hint" class="hint">5 折 = 支付原价的 50%</p>
+          <p id="multiplier-preview" class="preview">支付倍率：×0.5</p>
+        </div>
+
+        <div class="presets">
+          <span class="label">快捷示例</span>
+          <div class="preset-buttons">
+            <button type="button" class="preset-btn" data-preset="channel1">
+              渠道一 · ¥1:$1 · 5折
+            </button>
+            <button type="button" class="preset-btn" data-preset="channel2">
+              渠道二 · ¥7:$1 · 1.5折
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section
+        class="card output-card"
+        aria-labelledby="output-heading"
+        aria-live="polite"
+      >
+        <h2 id="output-heading">计算结果</h2>
+
+        <p id="error-message" class="error hidden" role="alert"></p>
+
+        <div id="results" class="results">
+          <article class="result-item highlight">
+            <p class="result-label">归一化倍率（¥1 : $1）</p>
+            <p class="result-value">
+              <span aria-hidden="true">×</span>
+              <span id="normalized-multiplier">0.5</span>
+            </p>
+            <p id="equivalent-desc" class="result-desc">相当于 5 折</p>
+          </article>
+
+          <article class="result-item">
+            <p class="result-label">买 1 美元实付</p>
+            <p class="result-value">
+              <span id="cny-per-usd">0.5</span>
+              <span class="unit">元</span>
+            </p>
+          </article>
+
+          <article class="result-item">
+            <p class="result-label">1 元人民币可换</p>
+            <p class="result-value">
+              <span id="usd-per-cny">2</span>
+              <span class="unit">美元</span>
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <footer class="footer">
+        <p>
+          公式：归一化倍率 = 基准汇率 × 支付倍率；1 元可换美元 = 1 ÷ 归一化倍率
+        </p>
+      </footer>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>
