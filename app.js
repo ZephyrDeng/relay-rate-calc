@@ -3,6 +3,45 @@ const PRESETS = {
   channel2: { baseCnyPerUsd: 7, mode: "zhe", discountValue: 1.5 },
 };
 
+const MARKET_RATE_PROVIDERS = [
+  {
+    name: "Frankfurter",
+    fetchRate: async () => {
+      const response = await fetch(
+        "https://api.frankfurter.dev/v1/latest?from=USD&to=CNY"
+      );
+      if (!response.ok) throw new Error("Frankfurter request failed");
+      const data = await response.json();
+      const rate = data?.rates?.CNY;
+      if (!Number.isFinite(rate) || rate <= 0) {
+        throw new Error("Frankfurter returned invalid rate");
+      }
+      return {
+        cnyPerUsd: rate,
+        source: "Frankfurter (ECB)",
+        date: data.date,
+      };
+    },
+  },
+  {
+    name: "open.er-api.com",
+    fetchRate: async () => {
+      const response = await fetch("https://open.er-api.com/v6/latest/USD");
+      if (!response.ok) throw new Error("open.er-api request failed");
+      const data = await response.json();
+      const rate = data?.rates?.CNY;
+      if (!Number.isFinite(rate) || rate <= 0) {
+        throw new Error("open.er-api returned invalid rate");
+      }
+      return {
+        cnyPerUsd: rate,
+        source: "open.er-api.com",
+        date: data.time_last_update_utc,
+      };
+    },
+  },
+];
+
 const elements = {
   baseRate: document.getElementById("base-rate"),
   discountValue: document.getElementById("discount-value"),
@@ -18,9 +57,18 @@ const elements = {
   equivalentDesc: document.getElementById("equivalent-desc"),
   cnyPerUsd: document.getElementById("cny-per-usd"),
   usdPerCny: document.getElementById("usd-per-cny"),
+  marketRateValue: document.getElementById("market-rate-value"),
+  marketRateMeta: document.getElementById("market-rate-meta"),
+  refreshMarketRate: document.getElementById("refresh-market-rate"),
+  applyMarketRate: document.getElementById("apply-market-rate"),
+  marketCompare: document.getElementById("market-compare"),
+  marketAdvantage: document.getElementById("market-advantage"),
+  marketCompareDesc: document.getElementById("market-compare-desc"),
 };
 
 let currentMode = "zhe";
+let marketRate = null;
+let marketRateLoading = false;
 
 function zheToMultiplier(zhe) {
   return zhe / 10;
@@ -31,6 +79,11 @@ function calcRelayRate({ baseCnyPerUsd, paymentMultiplier }) {
   const usdPerCny = 1 / normalizedMultiplier;
   const cnyPerUsd = normalizedMultiplier;
   return { normalizedMultiplier, usdPerCny, cnyPerUsd };
+}
+
+function calcMarketAdvantage({ relayUsdPerCny, marketCnyPerUsd }) {
+  const marketUsdPerCny = 1 / marketCnyPerUsd;
+  return relayUsdPerCny / marketUsdPerCny;
 }
 
 function formatNumber(value, maxDecimals = 4) {
@@ -52,6 +105,13 @@ function describeEquivalent(normalizedMultiplier) {
     return `相当于 ${formatNumber(zhe, 2)} 折（溢价 ${formatNumber(zhe - 10, 2)}%）`;
   }
   return `相当于 ${formatNumber(zhe, 2)} 折`;
+}
+
+function describeMarketComparison(advantageMultiplier, marketCnyPerUsd) {
+  if (advantageMultiplier >= 1) {
+    return `比市场汇率（¥${formatNumber(marketCnyPerUsd, 2)}:$1）多换 ${formatNumber(advantageMultiplier, 2)} 倍美元`;
+  }
+  return `比市场汇率（¥${formatNumber(marketCnyPerUsd, 2)}:$1）少换 ${formatNumber(1 / advantageMultiplier, 2)} 倍美元`;
 }
 
 function parsePositiveNumber(raw) {
@@ -107,12 +167,77 @@ function clearError() {
   elements.results.classList.remove("disabled");
 }
 
+function setMarketRateLoading(isLoading) {
+  marketRateLoading = isLoading;
+  elements.refreshMarketRate.disabled = isLoading;
+  elements.applyMarketRate.disabled = isLoading || !marketRate;
+  if (isLoading) {
+    elements.marketRateMeta.textContent = "正在获取实时汇率…";
+  }
+}
+
+function renderMarketRate() {
+  if (!marketRate) return;
+
+  elements.marketRateValue.textContent = formatNumber(marketRate.cnyPerUsd, 4);
+  elements.marketRateMeta.textContent = `来源：${marketRate.source} · 更新：${marketRate.date}`;
+  elements.applyMarketRate.disabled = false;
+}
+
+function hideMarketComparison() {
+  elements.marketCompare.classList.add("hidden");
+}
+
+function updateMarketComparison(relayUsdPerCny) {
+  if (!marketRate) {
+    hideMarketComparison();
+    return;
+  }
+
+  const advantageMultiplier = calcMarketAdvantage({
+    relayUsdPerCny,
+    marketCnyPerUsd: marketRate.cnyPerUsd,
+  });
+
+  elements.marketAdvantage.textContent = formatNumber(advantageMultiplier, 2);
+  elements.marketCompareDesc.textContent = describeMarketComparison(
+    advantageMultiplier,
+    marketRate.cnyPerUsd
+  );
+  elements.marketCompare.classList.remove("hidden");
+}
+
+async function fetchMarketRate() {
+  setMarketRateLoading(true);
+  let lastError = null;
+
+  for (const provider of MARKET_RATE_PROVIDERS) {
+    try {
+      marketRate = await provider.fetchRate();
+      renderMarketRate();
+      setMarketRateLoading(false);
+      recalculate();
+      return;
+    } catch (error) {
+      lastError = error;
+    }
+  }
+
+  elements.marketRateValue.textContent = "—";
+  elements.marketRateMeta.textContent = "获取市场汇率失败，请稍后重试。";
+  elements.applyMarketRate.disabled = true;
+  hideMarketComparison();
+  setMarketRateLoading(false);
+  console.error("Market rate fetch failed:", lastError);
+}
+
 function recalculate() {
   const baseCnyPerUsd = parsePositiveNumber(elements.baseRate.value);
   const paymentMultiplier = getPaymentMultiplier();
 
   if (baseCnyPerUsd === null) {
     showError("请输入大于 0 的基准汇率。");
+    hideMarketComparison();
     return;
   }
 
@@ -122,6 +247,7 @@ function recalculate() {
         ? "请输入大于 0 的折扣（折）。"
         : "请输入大于 0 的支付倍率。"
     );
+    hideMarketComparison();
     return;
   }
 
@@ -138,6 +264,7 @@ function recalculate() {
   );
   elements.cnyPerUsd.textContent = formatNumber(result.cnyPerUsd);
   elements.usdPerCny.textContent = formatNumber(result.usdPerCny);
+  updateMarketComparison(result.usdPerCny);
 }
 
 function applyPreset(presetKey) {
@@ -147,6 +274,12 @@ function applyPreset(presetKey) {
   elements.baseRate.value = String(preset.baseCnyPerUsd);
   setMode(preset.mode);
   elements.discountValue.value = String(preset.discountValue);
+  recalculate();
+}
+
+function applyMarketRateToBase() {
+  if (!marketRate) return;
+  elements.baseRate.value = formatNumber(marketRate.cnyPerUsd, 6);
   recalculate();
 }
 
@@ -167,5 +300,9 @@ elements.presetButtons.forEach((button) => {
   input.addEventListener("input", recalculate);
 });
 
+elements.refreshMarketRate.addEventListener("click", fetchMarketRate);
+elements.applyMarketRate.addEventListener("click", applyMarketRateToBase);
+
 setMode("zhe");
+fetchMarketRate();
 recalculate();

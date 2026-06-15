@@ -23,6 +23,24 @@
       <section class="card input-card" aria-labelledby="input-heading">
         <h2 id="input-heading">输入参数</h2>
 
+        <div class="field market-field">
+          <div class="market-header">
+            <span class="label">市场汇率（USD/CNY）</span>
+            <button type="button" id="refresh-market-rate" class="text-btn">
+              刷新
+            </button>
+          </div>
+          <div class="market-rate-card">
+            <p class="market-rate-value">
+              ¥ <span id="market-rate-value">—</span> : $1
+            </p>
+            <p id="market-rate-meta" class="hint">正在获取实时汇率…</p>
+            <button type="button" id="apply-market-rate" class="apply-btn" disabled>
+              填入基准汇率
+            </button>
+          </div>
+        </div>
+
         <div class="field">
           <label for="base-rate">基准汇率</label>
           <div class="rate-input">
@@ -131,6 +149,15 @@
               <span id="usd-per-cny">2</span>
               <span class="unit">美元</span>
             </p>
+          </article>
+
+          <article id="market-compare" class="result-item market-compare hidden">
+            <p class="result-label">相对市场汇率</p>
+            <p class="result-value">
+              <span id="market-advantage">—</span>
+              <span class="unit">倍</span>
+            </p>
+            <p id="market-compare-desc" class="result-desc">—</p>
           </article>
         </div>
       </section>
