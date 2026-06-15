@@ -13,14 +13,18 @@
   <body>
     <main class="page">
       <header class="hero">
-        <p class="eyebrow">Relay Rate Calculator</p>
-        <h1>中转站倍率计算器</h1>
-        <p class="subtitle">
-          统一按 <strong>¥1 : $1</strong> 基准，计算实际支付倍率与 1 元人民币可兑换美元数。
-        </p>
+        <div class="hero-copy">
+          <p class="eyebrow">Relay Rate Calculator</p>
+          <h1>中转站倍率计算器</h1>
+          <p class="subtitle">
+            统一按 <strong>¥1 : $1</strong> 基准，计算实际支付倍率、市场对比与 API 参考成本。
+          </p>
+        </div>
       </header>
 
-      <section class="card input-card" aria-labelledby="input-heading">
+      <div class="workspace">
+        <aside class="sidebar">
+          <section class="card input-card" aria-labelledby="input-heading">
         <h2 id="input-heading">输入参数</h2>
 
         <div class="field market-field">
@@ -114,13 +118,15 @@
             </button>
           </div>
         </div>
-      </section>
+          </section>
+        </aside>
 
-      <section
-        class="card output-card"
-        aria-labelledby="output-heading"
-        aria-live="polite"
-      >
+        <div class="main-panel">
+          <section
+            class="card output-card"
+            aria-labelledby="output-heading"
+            aria-live="polite"
+          >
         <h2 id="output-heading">计算结果</h2>
 
         <p id="error-message" class="error hidden" role="alert"></p>
@@ -160,15 +166,17 @@
             <p id="market-compare-desc" class="result-desc">—</p>
           </article>
         </div>
-      </section>
+          </section>
 
-      <section class="card cost-card" aria-labelledby="cost-heading">
-        <div class="cost-header">
-          <h2 id="cost-heading">参考成本（官方定价）</h2>
-          <p id="pricing-meta" class="hint">基于 OpenAI / Anthropic 官方 API 标价估算</p>
+          <section class="card cost-card" aria-labelledby="cost-heading">
+            <div class="cost-header">
+              <h2 id="cost-heading">参考成本（官方定价）</h2>
+              <p id="pricing-meta" class="hint">基于 OpenAI / Anthropic 官方 API 标价估算</p>
+            </div>
+            <div id="cost-scenarios" class="cost-list"></div>
+          </section>
         </div>
-        <div id="cost-scenarios" class="cost-list"></div>
-      </section>
+      </div>
 
       <footer class="footer">
         <p>
