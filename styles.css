@@ -10,6 +10,8 @@
   --accent-soft: rgba(31, 107, 79, 0.12);
   --danger: #b42318;
   --danger-soft: rgba(180, 35, 24, 0.08);
+  --success: #1f6b4f;
+  --success-soft: rgba(31, 107, 79, 0.1);
   --shadow: 0 18px 50px rgba(31, 42, 36, 0.08);
   --radius: 18px;
   --sidebar-width: 340px;
@@ -30,6 +32,8 @@
     --accent-soft: rgba(87, 195, 155, 0.14);
     --danger: #ff8f84;
     --danger-soft: rgba(255, 143, 132, 0.12);
+    --success: #57c39b;
+    --success-soft: rgba(87, 195, 155, 0.14);
     --shadow: 0 18px 50px rgba(0, 0, 0, 0.28);
   }
 }
@@ -420,8 +424,20 @@ input[type="number"]::-webkit-inner-spin-button {
 }
 
 .cost-metric-note.compare {
-  color: var(--accent);
-  font-weight: 600;
+  font-weight: 700;
+}
+
+.cost-metric-note.compare-neutral {
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.cost-metric-note.compare-cheaper {
+  color: var(--success);
+}
+
+.cost-metric-note.compare-expensive {
+  color: var(--danger);
 }
 
 .cost-metric {

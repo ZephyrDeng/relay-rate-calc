@@ -108,17 +108,23 @@ function formatCny(value) {
 
 function describeRelayVsOfficial(relayCny, officialCnyEquivalent) {
   if (!Number.isFinite(relayCny) || !Number.isFinite(officialCnyEquivalent)) {
-    return "—";
+    return { text: "—", tone: "neutral" };
   }
 
   const ratio = relayCny / officialCnyEquivalent;
   if (Math.abs(ratio - 1) < 0.005) {
-    return "与官方等价（仅汇率换算）";
+    return { text: "与官方等价（仅汇率换算）", tone: "neutral" };
   }
   if (ratio < 1) {
-    return `比官方便宜 ${formatNumber((1 - ratio) * 100, 1)}%`;
+    return {
+      text: `比官方便宜 ${formatNumber((1 - ratio) * 100, 1)}%`,
+      tone: "cheaper",
+    };
   }
-  return `比官方贵 ${formatNumber((ratio - 1) * 100, 1)}%`;
+  return {
+    text: `比官方贵 ${formatNumber((ratio - 1) * 100, 1)}%`,
+    tone: "expensive",
+  };
 }
 
 function multiplierToZhe(multiplier) {
@@ -231,6 +237,7 @@ function renderCostScenarios({ normalizedMultiplier, hasValidRate }) {
       ? calcMarketCnyCost({ usdCost, marketCnyPerUsd: marketRate.cnyPerUsd })
       : null;
     const compareDesc = describeRelayVsOfficial(relayCny, officialCnyEquivalent);
+    const compareClass = `cost-metric-note compare compare-${compareDesc.tone}`;
 
     return `
       <article class="cost-item">
@@ -256,7 +263,7 @@ function renderCostScenarios({ normalizedMultiplier, hasValidRate }) {
           <div class="cost-metric">
             <p class="cost-metric-label">中转实付（人民币）</p>
             <p class="cost-metric-value relay">${formatCny(relayCny)}</p>
-            <p class="cost-metric-note compare">${compareDesc}</p>
+            <p class="${compareClass}">${compareDesc.text}</p>
           </div>
         </div>
       </article>
