@@ -106,6 +106,21 @@ function formatCny(value) {
   return `¥${formatNumber(value, 6)}`;
 }
 
+function describeRelayVsOfficial(relayCny, officialCnyEquivalent) {
+  if (!Number.isFinite(relayCny) || !Number.isFinite(officialCnyEquivalent)) {
+    return "—";
+  }
+
+  const ratio = relayCny / officialCnyEquivalent;
+  if (Math.abs(ratio - 1) < 0.005) {
+    return "与官方等价（仅汇率换算）";
+  }
+  if (ratio < 1) {
+    return `比官方便宜 ${formatNumber((1 - ratio) * 100, 1)}%`;
+  }
+  return `比官方贵 ${formatNumber((ratio - 1) * 100, 1)}%`;
+}
+
 function multiplierToZhe(multiplier) {
   return multiplier * 10;
 }
@@ -212,9 +227,10 @@ function renderCostScenarios({ normalizedMultiplier, hasValidRate }) {
   elements.costScenarios.innerHTML = REFERENCE_SCENARIOS.map((scenario) => {
     const usdCost = calcScenarioUsdCost(scenario);
     const relayCny = calcRelayCnyCost({ usdCost, normalizedMultiplier });
-    const marketCny = marketRate
+    const officialCnyEquivalent = marketRate
       ? calcMarketCnyCost({ usdCost, marketCnyPerUsd: marketRate.cnyPerUsd })
       : null;
+    const compareDesc = describeRelayVsOfficial(relayCny, officialCnyEquivalent);
 
     return `
       <article class="cost-item">
@@ -227,18 +243,20 @@ function renderCostScenarios({ normalizedMultiplier, hasValidRate }) {
         </div>
         <div class="cost-metrics">
           <div class="cost-metric">
-            <p class="cost-metric-label">官方成本</p>
+            <p class="cost-metric-label">官方 API（美元）</p>
             <p class="cost-metric-value">${formatUsd(usdCost)}</p>
           </div>
           <div class="cost-metric">
-            <p class="cost-metric-label">中转实付</p>
-            <p class="cost-metric-value relay">${formatCny(relayCny)}</p>
+            <p class="cost-metric-label">官方等价（人民币）</p>
+            <p class="cost-metric-value">${
+              officialCnyEquivalent === null ? "—" : formatCny(officialCnyEquivalent)
+            }</p>
+            <p class="cost-metric-note">按市场汇率换算</p>
           </div>
           <div class="cost-metric">
-            <p class="cost-metric-label">市场直付</p>
-            <p class="cost-metric-value">${
-              marketCny === null ? "—" : formatCny(marketCny)
-            }</p>
+            <p class="cost-metric-label">中转实付（人民币）</p>
+            <p class="cost-metric-value relay">${formatCny(relayCny)}</p>
+            <p class="cost-metric-note compare">${compareDesc}</p>
           </div>
         </div>
       </article>

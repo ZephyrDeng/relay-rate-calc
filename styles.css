@@ -348,10 +348,8 @@ input[type="number"]::-webkit-inner-spin-button {
 }
 
 .cost-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 16px;
+  display: grid;
+  gap: 10px;
   margin-bottom: 12px;
 }
 
@@ -361,8 +359,16 @@ input[type="number"]::-webkit-inner-spin-button {
 
 .cost-header .hint {
   margin-top: 0;
-  max-width: 36ch;
-  text-align: right;
+}
+
+.cost-note {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--accent-soft) 70%, var(--surface));
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  line-height: 1.5;
 }
 
 .cost-list {
@@ -404,6 +410,18 @@ input[type="number"]::-webkit-inner-spin-button {
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 8px;
   margin-top: 10px;
+}
+
+.cost-metric-note {
+  margin: 4px 0 0;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  line-height: 1.35;
+}
+
+.cost-metric-note.compare {
+  color: var(--accent);
+  font-weight: 600;
 }
 
 .cost-metric {
@@ -463,14 +481,6 @@ input[type="number"]::-webkit-inner-spin-button {
     grid-template-columns: 1fr;
   }
 
-  .cost-header {
-    flex-direction: column;
-  }
-
-  .cost-header .hint {
-    text-align: left;
-    max-width: none;
-  }
 }
 
 @media (max-width: 640px) {

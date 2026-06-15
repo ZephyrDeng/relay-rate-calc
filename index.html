@@ -8,7 +8,7 @@
       content="中转站倍率计算器：将任意基准汇率与折扣归一化为 ¥1:$1 下的实际支付倍率"
     />
     <title>中转站倍率计算器</title>
-    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="styles.css?v=2" />
   </head>
   <body>
     <main class="page">
@@ -170,8 +170,13 @@
 
           <section class="card cost-card" aria-labelledby="cost-heading">
             <div class="cost-header">
-              <h2 id="cost-heading">参考成本（官方定价）</h2>
-              <p id="pricing-meta" class="hint">基于 OpenAI / Anthropic 官方 API 标价估算</p>
+              <div>
+                <h2 id="cost-heading">参考成本（官方定价）</h2>
+                <p id="pricing-meta" class="hint">基于 OpenAI / Anthropic 官方 API 标价估算</p>
+              </div>
+              <p class="cost-note">
+                官方 API 以<strong>美元</strong>计费；中转实付为<strong>人民币</strong>。请用「官方等价」对比，勿将 $0.021 与 ¥0.14 直接比大小。
+              </p>
             </div>
             <div id="cost-scenarios" class="cost-list"></div>
           </section>
@@ -182,7 +187,7 @@
         <p>
           公式：归一化倍率 = 基准汇率 × 支付倍率；1 元可换美元 = 1 ÷ 归一化倍率
         </p>
-        <p>参考成本：中转实付（元）= 官方美元成本 × 归一化倍率</p>
+        <p>参考成本：官方等价（元）= 官方美元 × 市场汇率；中转实付（元）= 官方美元 × 归一化倍率</p>
       </footer>
     </main>
 
