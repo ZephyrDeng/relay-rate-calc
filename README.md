@@ -29,23 +29,28 @@ python3 -m http.server 8080
 
 浏览器打开 <http://localhost:8080>。
 
+## 在线访问
+
+https://zephyrdeng.github.io/relay-rate-calc/
+
 ## GitHub Pages 部署
 
-1. 将本仓库推送到 GitHub 公开仓库（例如 `relay-rate-calc`）
-2. 进入仓库 **Settings → Pages**
-3. **Source** 选择 **Deploy from a branch**
-4. **Branch** 选 `main`，目录选 `/ (root)`
-5. 保存后等待部署，访问 `https://<username>.github.io/relay-rate-calc/`
+仓库使用 GitHub Actions 自动部署（见 [`.github/workflows/deploy-pages.yml`](.github/workflows/deploy-pages.yml)）。
 
-仓库已包含 `.nojekyll`，避免 Jekyll 处理静态文件。
+1. 推送代码到 `main` 分支
+2. Actions 工作流 `Deploy to GitHub Pages` 会自动运行
+3. 也可在 Actions 页手动触发 `workflow_dispatch`
+
+首次启用时，在仓库 **Settings → Pages** 中将 **Source** 设为 **GitHub Actions**。
 
 ## 文件结构
 
 ```text
 relay-rate-calc/
-├── index.html    # 页面
-├── styles.css    # 样式
-├── app.js        # 计算逻辑
+├── index.html                      # 页面
+├── styles.css                      # 样式
+├── app.js                          # 计算逻辑
+├── .github/workflows/deploy-pages.yml
 ├── README.md
 ├── LICENSE
 └── .nojekyll
