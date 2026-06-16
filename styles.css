@@ -62,6 +62,87 @@ body {
   margin-bottom: 20px;
 }
 
+.hero-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.hero-links {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.github-btn,
+.github-star-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--surface-border);
+  background: var(--surface);
+  color: var(--text);
+  text-decoration: none;
+  font-size: 0.88rem;
+  font-weight: 600;
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(10px);
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease,
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.github-btn:hover,
+.github-star-btn:hover {
+  transform: translateY(-1px);
+}
+
+.github-btn:hover {
+  border-color: color-mix(in srgb, var(--text) 18%, var(--surface-border));
+  background: color-mix(in srgb, var(--surface) 82%, var(--accent-soft));
+}
+
+.github-star-btn {
+  border-color: color-mix(in srgb, #e3b341 35%, var(--surface-border));
+  background: color-mix(in srgb, #e3b341 10%, var(--surface));
+}
+
+.github-star-btn:hover {
+  border-color: color-mix(in srgb, #e3b341 55%, var(--surface-border));
+  background: color-mix(in srgb, #e3b341 18%, var(--surface));
+  box-shadow: 0 12px 28px color-mix(in srgb, #e3b341 22%, transparent);
+}
+
+.icon-github,
+.icon-star {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+.icon-star {
+  color: #e3b341;
+}
+
+.github-star-count {
+  font-family: var(--font-mono);
+  font-size: 0.86rem;
+  min-width: 1.2ch;
+  text-align: center;
+}
+
+.github-star-count.is-loading {
+  opacity: 0.45;
+}
+
 .eyebrow {
   margin: 0 0 6px;
   font-size: 0.78rem;
@@ -503,6 +584,16 @@ input[type="number"]::-webkit-inner-spin-button {
   .page {
     width: min(100%, calc(100% - 20px));
     padding-top: 20px;
+  }
+
+  .hero-links {
+    width: 100%;
+  }
+
+  .github-btn,
+  .github-star-btn {
+    flex: 1;
+    justify-content: center;
   }
 
   .card {

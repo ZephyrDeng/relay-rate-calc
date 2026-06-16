@@ -1,3 +1,8 @@
+const GITHUB_REPO = {
+  owner: "ZephyrDeng",
+  repo: "relay-rate-calc",
+};
+
 const PRESETS = {
   channel1: { baseCnyPerUsd: 1, mode: "zhe", discountValue: 5 },
   channel2: { baseCnyPerUsd: 7, mode: "zhe", discountValue: 1.5 },
@@ -394,6 +399,40 @@ elements.applyMarketRate.addEventListener("click", applyMarketRateToBase);
 
 elements.pricingMeta.textContent = `${PRICING_META.note} 更新：${PRICING_META.updatedAt}`;
 
+function formatStarCount(count) {
+  if (!Number.isFinite(count) || count < 0) return "—";
+  if (count >= 10000) {
+    return `${(count / 1000).toFixed(1).replace(/\.0$/, "")}k`;
+  }
+  if (count >= 1000) {
+    return `${(count / 1000).toFixed(1)}k`;
+  }
+  return String(count);
+}
+
+async function fetchGithubStarCount() {
+  const starCountEl = document.getElementById("github-star-count");
+  if (!starCountEl) return;
+
+  starCountEl.classList.add("is-loading");
+
+  try {
+    const response = await fetch(
+      `https://api.github.com/repos/${GITHUB_REPO.owner}/${GITHUB_REPO.repo}`,
+      { headers: { Accept: "application/vnd.github+json" } }
+    );
+    if (!response.ok) throw new Error("GitHub API request failed");
+
+    const data = await response.json();
+    starCountEl.textContent = formatStarCount(data.stargazers_count);
+  } catch {
+    starCountEl.textContent = "—";
+  } finally {
+    starCountEl.classList.remove("is-loading");
+  }
+}
+
 setMode("zhe");
 fetchMarketRate();
+fetchGithubStarCount();
 recalculate();
