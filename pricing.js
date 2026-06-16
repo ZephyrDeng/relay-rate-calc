@@ -6,7 +6,7 @@
 
 const PRICING_META = {
   updatedAt: "2026-06-15",
-  note: "参考官方 API 标价，不含缓存折扣、Batch、工具调用等附加费用。",
+  note: "按官方 API 标价估算，不含缓存折扣、Batch、工具调用等附加费用。",
 };
 
 const REFERENCE_SCENARIOS = [

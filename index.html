@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
       name="description"
-      content="中转站倍率计算器：将任意基准汇率与折扣归一化为 ¥1:$1 下的实际支付倍率"
+      content="中转站倍率计算器：把任意基准汇率和折扣换算到 ¥1:$1 基准，得出实际支付倍率"
     />
     <title>中转站倍率计算器</title>
     <link rel="stylesheet" href="styles.css?v=4" />
@@ -18,7 +18,7 @@
             <p class="eyebrow">Relay Rate Calculator</p>
             <h1>中转站倍率计算器</h1>
             <p class="subtitle">
-              统一按 <strong>¥1 : $1</strong> 基准，计算实际支付倍率、市场对比与 API 参考成本。
+              按 <strong>¥1 : $1</strong> 基准换算支付倍率，并与市场汇率、官方 API 参考成本对照。
             </p>
           </div>
           <nav class="hero-links" aria-label="项目链接">
@@ -209,7 +209,7 @@
                 <p id="pricing-meta" class="hint">基于 OpenAI / Anthropic 官方 API 标价估算</p>
               </div>
               <p class="cost-note">
-                官方 API 以<strong>美元</strong>计费；中转实付为<strong>人民币</strong>。请用「官方等价」对比，勿将 $0.021 与 ¥0.14 直接比大小。
+                官方 API 按<strong>美元</strong>计费，中转实付是<strong>人民币</strong>。请用「官方等价」一栏做对比，不要把 $0.021 和 ¥0.14 直接拿来比。
               </p>
             </div>
             <div id="cost-scenarios" class="cost-list"></div>

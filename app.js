@@ -126,7 +126,7 @@ function describeRelayVsOfficial(relayCny, officialCnyEquivalent) {
 
   const ratio = relayCny / officialCnyEquivalent;
   if (Math.abs(ratio - 1) < 0.005) {
-    return { text: "与官方等价（仅汇率换算）", tone: "neutral" };
+    return { text: "与官方等价（按市场汇率换算）", tone: "neutral" };
   }
   if (ratio < 1) {
     return {
@@ -156,10 +156,11 @@ function describeEquivalent(normalizedMultiplier) {
 }
 
 function describeMarketComparison(advantageMultiplier, marketCnyPerUsd) {
+  const marketLabel = `¥${formatNumber(marketCnyPerUsd, 2)}:$1`;
   if (advantageMultiplier >= 1) {
-    return `比市场汇率（¥${formatNumber(marketCnyPerUsd, 2)}:$1）多换 ${formatNumber(advantageMultiplier, 2)} 倍美元`;
+    return `同样花 1 元，比市场汇率（${marketLabel}）能多换约 ${formatNumber(advantageMultiplier, 2)} 倍美元`;
   }
-  return `比市场汇率（¥${formatNumber(marketCnyPerUsd, 2)}:$1）少换 ${formatNumber(1 / advantageMultiplier, 2)} 倍美元`;
+  return `同样花 1 元，只能换到市场汇率（${marketLabel}）水平的约 ${formatNumber(advantageMultiplier * 100, 1)}%`;
 }
 
 function parsePositiveNumber(raw) {
