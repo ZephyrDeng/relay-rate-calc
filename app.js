@@ -3,10 +3,13 @@ const GITHUB_REPO = {
   repo: "relay-rate-calc",
 };
 
-const GITHUB_STAR_SYNC_INTERVAL_MS = 5 * 60 * 1000;
+const GITHUB_STAR_CACHE_KEY = "relay-rate-calc:github-stars";
+const GITHUB_STAR_CACHE_TTL_MS = 30 * 60 * 1000;
+const GITHUB_STAR_SYNC_INTERVAL_MS = GITHUB_STAR_CACHE_TTL_MS;
 
 let githubStarRefreshTimer = null;
 let githubStarSyncStarted = false;
+let githubStarHiddenAt = null;
 
 const PRESETS = {
   channel1: { baseCnyPerUsd: 1, mode: "zhe", discountValue: 5 },
@@ -404,40 +407,93 @@ elements.applyMarketRate.addEventListener("click", applyMarketRateToBase);
 
 elements.pricingMeta.textContent = `${PRICING_META.note} 更新：${PRICING_META.updatedAt}`;
 
-function formatStarCount(count) {
-  if (!Number.isFinite(count) || count < 0) return "—";
-  if (count >= 10000) {
-    return `${(count / 1000).toFixed(1).replace(/\.0$/, "")}k`;
-  }
-  if (count >= 1000) {
-    return `${(count / 1000).toFixed(1)}k`;
-  }
-  return String(count);
+function getGithubStarShieldsUrl() {
+  return `https://img.shields.io/github/stars/${GITHUB_REPO.owner}/${GITHUB_REPO.repo}.json`;
 }
 
-async function fetchGithubStarCount({ showLoading = false } = {}) {
+function readGithubStarCache() {
+  try {
+    const raw = localStorage.getItem(GITHUB_STAR_CACHE_KEY);
+    if (!raw) return null;
+
+    const cache = JSON.parse(raw);
+    if (!cache?.count || !Number.isFinite(cache.fetchedAt)) return null;
+    return cache;
+  } catch {
+    return null;
+  }
+}
+
+function writeGithubStarCache(count) {
+  try {
+    localStorage.setItem(
+      GITHUB_STAR_CACHE_KEY,
+      JSON.stringify({ count, fetchedAt: Date.now() })
+    );
+  } catch {
+    // Ignore quota or privacy mode errors.
+  }
+}
+
+function isGithubStarCacheFresh(cache) {
+  return Date.now() - cache.fetchedAt < GITHUB_STAR_CACHE_TTL_MS;
+}
+
+function renderGithubStarCount(starCountEl, count) {
+  starCountEl.textContent = count || "—";
+}
+
+function parseShieldsStarCount(data) {
+  const count = data?.message ?? data?.value;
+  return typeof count === "string" && count.trim() ? count.trim() : null;
+}
+
+async function fetchGithubStarCount({ force = false, showLoading = false } = {}) {
   const starCountEl = document.getElementById("github-star-count");
   if (!starCountEl) return;
 
-  if (showLoading) {
+  const cache = readGithubStarCache();
+  if (cache && isGithubStarCacheFresh(cache) && !force) {
+    renderGithubStarCount(starCountEl, cache.count);
+    return;
+  }
+
+  if (cache && !force) {
+    renderGithubStarCount(starCountEl, cache.count);
+  }
+
+  if (showLoading && !cache) {
     starCountEl.classList.add("is-loading");
   }
 
   try {
-    const response = await fetch(
-      `https://api.github.com/repos/${GITHUB_REPO.owner}/${GITHUB_REPO.repo}`,
-      { headers: { Accept: "application/vnd.github+json" } }
-    );
-    if (!response.ok) throw new Error("GitHub API request failed");
+    const response = await fetch(getGithubStarShieldsUrl());
+    if (!response.ok) throw new Error("shields.io request failed");
 
     const data = await response.json();
-    starCountEl.textContent = formatStarCount(data.stargazers_count);
+    const count = parseShieldsStarCount(data);
+    if (!count) throw new Error("shields.io returned invalid star count");
+
+    writeGithubStarCache(count);
+    renderGithubStarCount(starCountEl, count);
   } catch {
+    if (cache) {
+      renderGithubStarCount(starCountEl, cache.count);
+      return;
+    }
+
     if (showLoading || starCountEl.textContent === "—") {
-      starCountEl.textContent = "—";
+      renderGithubStarCount(starCountEl, "—");
     }
   } finally {
     starCountEl.classList.remove("is-loading");
+  }
+}
+
+function refreshGithubStarCountIfStale() {
+  const cache = readGithubStarCache();
+  if (!cache || !isGithubStarCacheFresh(cache)) {
+    fetchGithubStarCount();
   }
 }
 
@@ -449,14 +505,23 @@ function startGithubStarSync() {
 
   githubStarRefreshTimer = window.setInterval(() => {
     if (document.visibilityState === "visible") {
-      fetchGithubStarCount();
+      refreshGithubStarCountIfStale();
     }
   }, GITHUB_STAR_SYNC_INTERVAL_MS);
 
   document.addEventListener("visibilitychange", () => {
-    if (document.visibilityState === "visible") {
-      fetchGithubStarCount();
+    if (document.visibilityState === "hidden") {
+      githubStarHiddenAt = Date.now();
+      return;
     }
+
+    const hiddenFor = githubStarHiddenAt ? Date.now() - githubStarHiddenAt : 0;
+    if (hiddenFor >= 60 * 1000) {
+      fetchGithubStarCount({ force: true });
+      return;
+    }
+
+    refreshGithubStarCountIfStale();
   });
 }
 
