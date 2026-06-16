@@ -3,6 +3,11 @@ const GITHUB_REPO = {
   repo: "relay-rate-calc",
 };
 
+const GITHUB_STAR_SYNC_INTERVAL_MS = 5 * 60 * 1000;
+
+let githubStarRefreshTimer = null;
+let githubStarSyncStarted = false;
+
 const PRESETS = {
   channel1: { baseCnyPerUsd: 1, mode: "zhe", discountValue: 5 },
   channel2: { baseCnyPerUsd: 7, mode: "zhe", discountValue: 1.5 },
@@ -410,11 +415,13 @@ function formatStarCount(count) {
   return String(count);
 }
 
-async function fetchGithubStarCount() {
+async function fetchGithubStarCount({ showLoading = false } = {}) {
   const starCountEl = document.getElementById("github-star-count");
   if (!starCountEl) return;
 
-  starCountEl.classList.add("is-loading");
+  if (showLoading) {
+    starCountEl.classList.add("is-loading");
+  }
 
   try {
     const response = await fetch(
@@ -426,13 +433,34 @@ async function fetchGithubStarCount() {
     const data = await response.json();
     starCountEl.textContent = formatStarCount(data.stargazers_count);
   } catch {
-    starCountEl.textContent = "—";
+    if (showLoading || starCountEl.textContent === "—") {
+      starCountEl.textContent = "—";
+    }
   } finally {
     starCountEl.classList.remove("is-loading");
   }
 }
 
+function startGithubStarSync() {
+  if (githubStarSyncStarted) return;
+  githubStarSyncStarted = true;
+
+  fetchGithubStarCount({ showLoading: true });
+
+  githubStarRefreshTimer = window.setInterval(() => {
+    if (document.visibilityState === "visible") {
+      fetchGithubStarCount();
+    }
+  }, GITHUB_STAR_SYNC_INTERVAL_MS);
+
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") {
+      fetchGithubStarCount();
+    }
+  });
+}
+
 setMode("zhe");
 fetchMarketRate();
-fetchGithubStarCount();
+startGithubStarSync();
 recalculate();
