@@ -60,14 +60,14 @@ const elements = {
   discountValue: document.getElementById("discount-value"),
   discountLabel: document.getElementById("discount-label"),
   discountSuffix: document.getElementById("discount-suffix"),
-  discountHint: document.getElementById("discount-hint"),
+  discountTip: document.getElementById("discount-tip"),
   multiplierPreview: document.getElementById("multiplier-preview"),
   modeButtons: document.querySelectorAll(".mode-btn"),
   presetButtons: document.querySelectorAll(".preset-btn"),
   errorMessage: document.getElementById("error-message"),
   results: document.getElementById("results"),
   normalizedMultiplier: document.getElementById("normalized-multiplier"),
-  equivalentDesc: document.getElementById("equivalent-desc"),
+  equivalentTip: document.getElementById("equivalent-tip"),
   cnyPerUsd: document.getElementById("cny-per-usd"),
   usdPerCny: document.getElementById("usd-per-cny"),
   marketRateValue: document.getElementById("market-rate-value"),
@@ -76,9 +76,17 @@ const elements = {
   applyMarketRate: document.getElementById("apply-market-rate"),
   marketCompare: document.getElementById("market-compare"),
   marketAdvantage: document.getElementById("market-advantage"),
-  marketCompareDesc: document.getElementById("market-compare-desc"),
-  pricingMeta: document.getElementById("pricing-meta"),
+  marketCompareTip: document.getElementById("market-compare-tip"),
+  marketRateTip: document.getElementById("market-rate-tip"),
+  pricingTip: document.getElementById("pricing-tip"),
   costScenarios: document.getElementById("cost-scenarios"),
+  visionGallery: document.getElementById("vision-gallery"),
+  visionDropzone: document.getElementById("vision-dropzone"),
+  visionFileName: document.getElementById("vision-file-name"),
+  visionFile: document.getElementById("vision-file"),
+  visionAnalyze: document.getElementById("vision-analyze"),
+  visionClear: document.getElementById("vision-clear"),
+  visionStatus: document.getElementById("vision-status"),
 };
 
 let currentMode = "zhe";
@@ -193,15 +201,15 @@ function setMode(mode) {
 
   elements.discountLabel.textContent = isZhe ? "折扣（折）" : "支付倍率";
   elements.discountSuffix.textContent = isZhe ? "折" : "";
-  elements.discountHint.textContent = isZhe
-    ? "5 折 = 支付原价的 50%"
-    : "直接输入实际支付倍率，如 0.5、0.15";
+  elements.discountTip.textContent = isZhe
+    ? "5 折 = 支付原价的 50%。"
+    : "直接输入支付倍率，如 0.5、0.15。";
   elements.multiplierPreview.classList.toggle("hidden", !isZhe);
 }
 
 function updateMultiplierPreview(paymentMultiplier) {
   if (currentMode !== "zhe") return;
-  elements.multiplierPreview.textContent = `支付倍率：×${formatNumber(paymentMultiplier)}`;
+  elements.multiplierPreview.textContent = `×${formatNumber(paymentMultiplier)}`;
 }
 
 function showError(message) {
@@ -216,12 +224,17 @@ function clearError() {
   elements.results.classList.remove("disabled");
 }
 
+function setMarketRateMeta(message, visible = true) {
+  elements.marketRateMeta.textContent = message;
+  elements.marketRateMeta.classList.toggle("is-visible", visible);
+}
+
 function setMarketRateLoading(isLoading) {
   marketRateLoading = isLoading;
   elements.refreshMarketRate.disabled = isLoading;
   elements.applyMarketRate.disabled = isLoading || !marketRate;
   if (isLoading) {
-    elements.marketRateMeta.textContent = "正在获取实时汇率…";
+    setMarketRateMeta("获取中…", true);
   }
 }
 
@@ -229,7 +242,8 @@ function renderMarketRate() {
   if (!marketRate) return;
 
   elements.marketRateValue.textContent = formatNumber(marketRate.cnyPerUsd, 4);
-  elements.marketRateMeta.textContent = `来源：${marketRate.source} · 更新：${marketRate.date}`;
+  elements.marketRateTip.textContent = `来源：${marketRate.source} · 更新：${marketRate.date}。可一键填入基准汇率。`;
+  setMarketRateMeta("", false);
   elements.applyMarketRate.disabled = false;
 }
 
@@ -258,24 +272,22 @@ function renderCostScenarios({ normalizedMultiplier, hasValidRate }) {
         <div class="cost-item-top">
           <div>
             <p class="cost-provider">${scenario.provider}</p>
-            <p class="cost-title">${scenario.label}</p>
-            <p class="cost-desc">${scenario.description}</p>
+            <p class="cost-title" title="${scenario.description}">${scenario.label}</p>
           </div>
         </div>
         <div class="cost-metrics">
           <div class="cost-metric">
-            <p class="cost-metric-label">官方 API（美元）</p>
+            <p class="cost-metric-label">官方 API</p>
             <p class="cost-metric-value">${formatUsd(usdCost)}</p>
           </div>
           <div class="cost-metric">
-            <p class="cost-metric-label">官方等价（人民币）</p>
+            <p class="cost-metric-label" title="按市场汇率换算">官方等价</p>
             <p class="cost-metric-value">${
               officialCnyEquivalent === null ? "—" : formatCny(officialCnyEquivalent)
             }</p>
-            <p class="cost-metric-note">按市场汇率换算</p>
           </div>
           <div class="cost-metric">
-            <p class="cost-metric-label">中转实付（人民币）</p>
+            <p class="cost-metric-label">中转实付</p>
             <p class="cost-metric-value relay">${formatCny(relayCny)}</p>
             <p class="${compareClass}">${compareDesc.text}</p>
           </div>
@@ -297,7 +309,7 @@ function updateMarketComparison(relayUsdPerCny) {
   });
 
   elements.marketAdvantage.textContent = formatNumber(advantageMultiplier, 2);
-  elements.marketCompareDesc.textContent = describeMarketComparison(
+  elements.marketCompareTip.textContent = describeMarketComparison(
     advantageMultiplier,
     marketRate.cnyPerUsd
   );
@@ -321,7 +333,7 @@ async function fetchMarketRate() {
   }
 
   elements.marketRateValue.textContent = "—";
-  elements.marketRateMeta.textContent = "获取市场汇率失败，请稍后重试。";
+  setMarketRateMeta("获取失败，请重试", true);
   elements.applyMarketRate.disabled = true;
   hideMarketComparison();
   setMarketRateLoading(false);
@@ -358,9 +370,9 @@ function recalculate() {
   elements.normalizedMultiplier.textContent = formatNumber(
     result.normalizedMultiplier
   );
-  elements.equivalentDesc.textContent = describeEquivalent(
+  elements.equivalentTip.textContent = `按 ¥1:$1 基准换算；${describeEquivalent(
     result.normalizedMultiplier
-  );
+  )}。`;
   elements.cnyPerUsd.textContent = formatNumber(result.cnyPerUsd);
   elements.usdPerCny.textContent = formatNumber(result.usdPerCny);
   updateMarketComparison(result.usdPerCny);
@@ -406,7 +418,9 @@ elements.presetButtons.forEach((button) => {
 elements.refreshMarketRate.addEventListener("click", fetchMarketRate);
 elements.applyMarketRate.addEventListener("click", applyMarketRateToBase);
 
-elements.pricingMeta.textContent = `${PRICING_META.note} 更新：${PRICING_META.updatedAt}`;
+if (elements.pricingTip) {
+  elements.pricingTip.textContent = `${PRICING_META.note} 更新：${PRICING_META.updatedAt}。官方按美元计费，中转按人民币实付；请用「官方等价」对比，勿直接比 $ 与 ¥ 数值。`;
+}
 
 function getGithubStarShieldsUrl() {
   return `https://img.shields.io/github/stars/${GITHUB_REPO.owner}/${GITHUB_REPO.repo}.json`;
@@ -569,7 +583,240 @@ function startGithubStarSync() {
   });
 }
 
+const TIP_GAP = 8;
+const TIP_VIEWPORT_PADDING = 8;
+const TIP_HIDE_DELAY_MS = 80;
+
+let activeTipControl = null;
+
+function clampTipPosition(value, min, max) {
+  return Math.min(Math.max(value, min), max);
+}
+
+function getTipPlacement(trigger, popRect) {
+  const triggerRect = trigger.getBoundingClientRect();
+  const viewportWidth = window.innerWidth;
+  const viewportHeight = window.innerHeight;
+  const preferAbove = Boolean(trigger.closest(".footer"));
+
+  let left = triggerRect.left;
+  if (trigger.classList.contains("vision-badge")) {
+    left = triggerRect.right - popRect.width;
+  } else if (trigger.closest(".main-panel, .footer, .output-card, .cost-card")) {
+    left = triggerRect.left + triggerRect.width / 2 - popRect.width / 2;
+  }
+
+  left = clampTipPosition(
+    left,
+    TIP_VIEWPORT_PADDING,
+    viewportWidth - popRect.width - TIP_VIEWPORT_PADDING
+  );
+
+  const belowTop = triggerRect.bottom + TIP_GAP;
+  const aboveTop = triggerRect.top - popRect.height - TIP_GAP;
+  const fitsBelow = belowTop + popRect.height <= viewportHeight - TIP_VIEWPORT_PADDING;
+  const fitsAbove = aboveTop >= TIP_VIEWPORT_PADDING;
+
+  let top = belowTop;
+  let placement = "below";
+
+  if (preferAbove && fitsAbove) {
+    top = aboveTop;
+    placement = "above";
+  } else if (!preferAbove && fitsBelow) {
+    top = belowTop;
+  } else if (fitsAbove) {
+    top = aboveTop;
+    placement = "above";
+  } else if (fitsBelow) {
+    top = belowTop;
+  } else {
+    top = clampTipPosition(
+      belowTop,
+      TIP_VIEWPORT_PADDING,
+      viewportHeight - popRect.height - TIP_VIEWPORT_PADDING
+    );
+    placement = "below";
+  }
+
+  return { left: Math.round(left), top: Math.round(top), placement };
+}
+
+function measureFloatingTip(trigger, popover) {
+  popover.classList.add("is-floating", "is-measuring");
+  popover.style.visibility = "hidden";
+  popover.style.opacity = "1";
+  popover.style.pointerEvents = "none";
+  popover.style.left = "-9999px";
+  popover.style.top = "0";
+
+  const popRect = popover.getBoundingClientRect();
+  const placement = getTipPlacement(trigger, popRect);
+
+  popover.classList.remove("is-measuring");
+  popover.style.left = `${placement.left}px`;
+  popover.style.top = `${placement.top}px`;
+  popover.dataset.placement = placement.placement;
+  popover.style.visibility = "";
+  popover.style.opacity = "";
+  popover.style.pointerEvents = "";
+}
+
+function mountFloatingTip(trigger, popover) {
+  if (!popover._tipHome) {
+    popover._tipHome = {
+      parent: trigger,
+      nextSibling: popover.nextSibling,
+    };
+  }
+
+  if (popover.parentElement !== document.body) {
+    document.body.appendChild(popover);
+  }
+}
+
+function restoreFloatingTip(trigger, popover) {
+  const home = popover._tipHome;
+  if (!home || popover.parentElement !== document.body) return;
+
+  if (home.nextSibling) {
+    home.parent.insertBefore(popover, home.nextSibling);
+  } else {
+    home.parent.appendChild(popover);
+  }
+}
+
+function resetFloatingTip(trigger, popover) {
+  popover.classList.remove("is-floating", "is-measuring", "is-open");
+  popover.style.left = "";
+  popover.style.top = "";
+  popover.style.visibility = "";
+  popover.style.opacity = "";
+  popover.style.pointerEvents = "";
+  delete popover.dataset.placement;
+  restoreFloatingTip(trigger, popover);
+}
+
+function resolveTipPopover(trigger, popover) {
+  return (
+    popover ||
+    activeTipControl?.popover ||
+    trigger.querySelector(".tip-popover")
+  );
+}
+
+function positionFloatingTip(trigger, popover) {
+  const tip = resolveTipPopover(trigger, popover);
+  if (!tip) return;
+
+  mountFloatingTip(trigger, tip);
+  measureFloatingTip(trigger, tip);
+}
+
+function hideActiveTip() {
+  if (!activeTipControl) return;
+
+  const { trigger, popover, hideTimer } = activeTipControl;
+  if (hideTimer) {
+    window.clearTimeout(hideTimer);
+  }
+
+  resetFloatingTip(trigger, popover);
+  activeTipControl = null;
+}
+
+function scheduleHideActiveTip() {
+  if (!activeTipControl) return;
+
+  if (activeTipControl.hideTimer) {
+    window.clearTimeout(activeTipControl.hideTimer);
+  }
+
+  activeTipControl.hideTimer = window.setTimeout(() => {
+    if (!activeTipControl) return;
+    const { trigger, popover } = activeTipControl;
+    if (trigger.matches(":hover, :focus-within") || popover.matches(":hover")) {
+      return;
+    }
+    hideActiveTip();
+  }, TIP_HIDE_DELAY_MS);
+}
+
+function showFloatingTip(trigger) {
+  const popover = trigger.querySelector(".tip-popover");
+  if (!popover) return;
+
+  if (activeTipControl && activeTipControl.trigger !== trigger) {
+    hideActiveTip();
+  }
+
+  if (activeTipControl?.hideTimer) {
+    window.clearTimeout(activeTipControl.hideTimer);
+    activeTipControl.hideTimer = null;
+  }
+
+  activeTipControl = { trigger, popover, hideTimer: null };
+  popover.classList.add("is-open");
+  positionFloatingTip(trigger, popover);
+}
+
+function initFloatingTips() {
+  const triggers = document.querySelectorAll(".tip-trigger");
+
+  triggers.forEach((trigger) => {
+    const popover = trigger.querySelector(".tip-popover");
+    if (!popover) return;
+
+    trigger.addEventListener("mouseenter", () => showFloatingTip(trigger));
+    trigger.addEventListener("focusin", () => showFloatingTip(trigger));
+    trigger.addEventListener("mouseleave", scheduleHideActiveTip);
+    trigger.addEventListener("focusout", (event) => {
+      if (!trigger.contains(event.relatedTarget) && !popover.contains(event.relatedTarget)) {
+        scheduleHideActiveTip();
+      }
+    });
+
+    popover.addEventListener("mouseenter", () => {
+      if (activeTipControl?.trigger === trigger && activeTipControl.hideTimer) {
+        window.clearTimeout(activeTipControl.hideTimer);
+        activeTipControl.hideTimer = null;
+      }
+    });
+    popover.addEventListener("mouseleave", scheduleHideActiveTip);
+  });
+
+  window.addEventListener(
+    "resize",
+    () => {
+      if (activeTipControl) {
+        positionFloatingTip(activeTipControl.trigger, activeTipControl.popover);
+      }
+    },
+    { passive: true }
+  );
+
+  window.addEventListener(
+    "scroll",
+    () => {
+      if (activeTipControl) {
+        positionFloatingTip(activeTipControl.trigger, activeTipControl.popover);
+      }
+    },
+    { capture: true, passive: true }
+  );
+}
+
 setMode("zhe");
 fetchMarketRate();
 startGithubStarSync();
 recalculate();
+initFloatingTips();
+
+if (typeof initVisionCapture === "function") {
+  initVisionCapture({
+    elements,
+    setMode,
+    recalculate,
+    formatNumber,
+  });
+}

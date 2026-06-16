@@ -42,7 +42,8 @@
 | **官方 API 参考成本** | 内置 Claude Sonnet/Opus、GPT-5.4/5.5 对话与 GPT Image 2 生图等参考场景 |
 | **分口径成本对比** | 分开显示「官方等价」和「中转实付」，避免美元和人民币直接比大小 |
 | **快捷预设** | 内置常见渠道示例，便于快速试算 |
-| **零依赖静态站** | 仅 `index.html` + `styles.css` + `app.js` + `pricing.js`，GitHub Actions 自动部署 |
+| **截图识图填参** | 支持多图上传/粘贴（如充值页 + 预览页），由 [Agnes AI](https://agnes-ai.com/doc/agnes-20-flash) `agnes-2.0-flash` 合并提取基准汇率与折扣 |
+| **零依赖静态站** | 纯 HTML + CSS + JS，GitHub Actions 自动部署 |
 
 ## 在线体验
 
@@ -61,6 +62,14 @@ python3 -m http.server 8080
 浏览器访问 [http://localhost:8080](http://localhost:8080)。
 
 > 市场汇率功能依赖外部 API，本地预览需联网。
+
+### 截图识图（Agnes AI 免费 Key）
+
+1. 在 [Agnes AI 控制台](https://agnes-ai.com) 创建 API Key（`agnes-2.0-flash` 当前为免费额度，见[官方文档](https://agnes-ai.com/doc/agnes-20-flash)）
+2. 将 Key 填入 [`agnes-config.js`](agnes-config.js) 的 `apiKey` 字段（已标注 `keyType: "free"`）
+3. 在页面侧栏上传或粘贴多张截图（例如充值页 + 折扣预览页），点击「识别并填参」
+
+感谢 [Agnes AI](https://agnes-ai.com) 免费开放 `agnes-2.0-flash` 多模态识图 API。
 
 ### Fork 并部署到自己的 GitHub Pages
 
@@ -126,6 +135,8 @@ relay-rate-calc/
 ├── index.html                      # 页面结构
 ├── styles.css                      # 主题、响应式与侧边栏布局
 ├── app.js                          # 倍率计算、市场汇率、Star 同步
+├── agnes-config.js                 # Agnes 免费 API Key 与端点配置
+├── vision.js                       # 截图识图与自动填参
 ├── pricing.js                      # 官方 API 定价与参考场景
 ├── .github/workflows/deploy-pages.yml
 ├── .nojekyll                       # 禁用 Jekyll，确保静态资源直出

@@ -1,0 +1,8 @@
+.DS_Store
+
+# Agent skills (local tooling, not part of the app)
+.agents/
+skills-lock.json
+
+# Promo assets for social posts (local only)
+promo/
