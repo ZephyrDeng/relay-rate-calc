@@ -443,9 +443,58 @@ function renderGithubStarCount(starCountEl, count) {
   starCountEl.textContent = count || "—";
 }
 
+function isValidStarCountDisplay(value) {
+  return /^\d+(\.\d+)?k?$/i.test(String(value).trim());
+}
+
+function formatGithubApiStarCount(count) {
+  if (!Number.isFinite(count) || count < 0) return null;
+  if (count >= 10000) {
+    return `${(count / 1000).toFixed(1).replace(/\.0$/, "")}k`;
+  }
+  if (count >= 1000) {
+    return `${(count / 1000).toFixed(1)}k`;
+  }
+  return String(count);
+}
+
 function parseShieldsStarCount(data) {
   const count = data?.message ?? data?.value;
-  return typeof count === "string" && count.trim() ? count.trim() : null;
+  if (typeof count !== "string") return null;
+
+  const trimmed = count.trim();
+  return isValidStarCountDisplay(trimmed) ? trimmed : null;
+}
+
+async function fetchGithubStarCountFromApi() {
+  const response = await fetch(
+    `https://api.github.com/repos/${GITHUB_REPO.owner}/${GITHUB_REPO.repo}`,
+    { headers: { Accept: "application/vnd.github+json" } }
+  );
+  if (!response.ok) throw new Error("GitHub API request failed");
+
+  const data = await response.json();
+  const count = formatGithubApiStarCount(data.stargazers_count);
+  if (!count) throw new Error("GitHub API returned invalid star count");
+  return count;
+}
+
+async function fetchGithubStarCountFromShields() {
+  const response = await fetch(getGithubStarShieldsUrl());
+  if (!response.ok) throw new Error("shields.io request failed");
+
+  const data = await response.json();
+  const count = parseShieldsStarCount(data);
+  if (!count) throw new Error("shields.io returned invalid star count");
+  return count;
+}
+
+async function resolveGithubStarCount() {
+  try {
+    return await fetchGithubStarCountFromShields();
+  } catch {
+    return fetchGithubStarCountFromApi();
+  }
 }
 
 async function fetchGithubStarCount({ force = false, showLoading = false } = {}) {
@@ -467,13 +516,7 @@ async function fetchGithubStarCount({ force = false, showLoading = false } = {})
   }
 
   try {
-    const response = await fetch(getGithubStarShieldsUrl());
-    if (!response.ok) throw new Error("shields.io request failed");
-
-    const data = await response.json();
-    const count = parseShieldsStarCount(data);
-    if (!count) throw new Error("shields.io returned invalid star count");
-
+    const count = await resolveGithubStarCount();
     writeGithubStarCache(count);
     renderGithubStarCount(starCountEl, count);
   } catch {
