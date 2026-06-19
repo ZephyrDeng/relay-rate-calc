@@ -158,6 +158,48 @@ body {
   opacity: 0.45;
 }
 
+.traffic-stat {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid color-mix(in srgb, var(--accent) 28%, var(--surface-border));
+  background: color-mix(in srgb, var(--accent) 8%, var(--surface));
+  color: var(--text);
+  font-size: 0.88rem;
+  font-weight: 600;
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(10px);
+}
+
+.icon-traffic {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  color: var(--accent);
+}
+
+.traffic-values {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.traffic-count {
+  font-family: var(--font-mono);
+  font-size: 0.86rem;
+  min-width: 1.2ch;
+}
+
+.traffic-label,
+.traffic-sep {
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
 .eyebrow {
   margin: 0 0 6px;
   font-size: 0.78rem;
@@ -926,7 +968,8 @@ input[type="number"]::-webkit-inner-spin-button {
   }
 
   .github-btn,
-  .github-star-btn {
+  .github-star-btn,
+  .traffic-stat {
     flex: 1;
     justify-content: center;
   }
